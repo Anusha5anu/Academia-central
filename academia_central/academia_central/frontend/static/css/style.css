@@ -1,0 +1,114 @@
+/* frontend/static/css/style.css */
+/* Custom styles for Academia Central */
+
+/* ── Global ──────────────────────────────────────────────────────────────── */
+body {
+  background-color: #f8f9fc;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Smooth page transitions */
+main {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Navbar ──────────────────────────────────────────────────────────────── */
+.navbar {
+  background: linear-gradient(135deg, #1a73e8, #0d47a1) !important;
+}
+
+.navbar-brand {
+  font-size: 1.4rem;
+  letter-spacing: 0.5px;
+}
+
+/* ── Hero Section (Home Page) ────────────────────────────────────────────── */
+.hero-section {
+  background: linear-gradient(135deg, #e8f0fe, #f0f7ff);
+  padding: 3rem 2rem;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────────── */
+.card {
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover lift effect for clickable cards */
+.hover-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table thead th {
+  font-weight: 600;
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #1a73e8, #0d47a1);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #1557c0, #083690);
+}
+
+/* ── Forms ───────────────────────────────────────────────────────────────── */
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 1.5px solid #dee2e6;
+  transition: border-color 0.2s;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+}
+
+/* ── Badges ──────────────────────────────────────────────────────────────── */
+.badge {
+  border-radius: 6px;
+  padding: 0.35em 0.65em;
+}
+
+/* ── Progress Bars ───────────────────────────────────────────────────────── */
+.progress {
+  border-radius: 50px;
+  background-color: #e9ecef;
+}
+
+.progress-bar {
+  border-radius: 50px;
+}
+
+/* ── Stat Cards (Admin) ──────────────────────────────────────────────────── */
+#stats-row .card {
+  border-radius: 14px;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 1rem;
+  margin-top: 2rem;
+  color: #aaa;
+  font-size: 0.85rem;
+}

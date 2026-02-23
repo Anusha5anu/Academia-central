@@ -1,0 +1,75 @@
+<!-- frontend/templates/login.html -->
+{% extends "base.html" %}
+{% block title %}Login | Academia Central{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card border-0 shadow p-4 mt-4">
+      <h3 class="fw-bold text-center mb-4 text-primary">
+        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+      </h3>
+
+      <!-- Error/Success messages -->
+      <div id="msg" class="d-none alert"></div>
+
+      <div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Email Address</label>
+          <input type="email" id="email" class="form-control" placeholder="you@example.com" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="Enter password" />
+        </div>
+        <button onclick="doLogin()" class="btn btn-primary w-100 py-2 fw-bold">
+          <i class="bi bi-unlock-fill me-1"></i> Login
+        </button>
+        <p class="text-center mt-3 text-muted">
+          Don't have an account? <a href="/register">Register here</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function doLogin() {
+  // Read values from the input fields
+  const email    = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const msgBox   = document.getElementById("msg");
+
+  // Send a POST request to our Flask backend
+  const res = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+
+  if (res.ok) {
+    // Save the JWT token and user info in localStorage (browser storage)
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("role",  data.role);
+    localStorage.setItem("name",  data.name);
+
+    // Redirect based on role
+    if (data.role === "admin") {
+      window.location.href = "/admin/dashboard";
+    } else {
+      window.location.href = "/student/dashboard";
+    }
+  } else {
+    // Show the error message
+    msgBox.className = "alert alert-danger";
+    msgBox.textContent = data.error;
+    msgBox.classList.remove("d-none");
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+<!-- frontend/templates/register.html -->
+{% extends "base.html" %}
+{% block title %}Register | Academia Central{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card border-0 shadow p-4 mt-4">
+      <h3 class="fw-bold text-center mb-4 text-primary">
+        <i class="bi bi-person-plus-fill me-2"></i>Create Account
+      </h3>
+
+      <div id="msg" class="d-none alert"></div>
+
+      <div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Full Name</label>
+          <input type="text" id="name" class="form-control" placeholder="John Doe" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Email Address</label>
+          <input type="email" id="email" class="form-control" placeholder="you@example.com" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="Min 6 characters" />
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Account Type</label>
+          <select id="role" class="form-select">
+            <option value="student">Student</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <button onclick="doRegister()" class="btn btn-success w-100 py-2 fw-bold">
+          <i class="bi bi-check-circle-fill me-1"></i> Register
+        </button>
+        <p class="text-center mt-3 text-muted">
+          Already registered? <a href="/login">Login here</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function doRegister() {
+  const name     = document.getElementById("name").value.trim();
+  const email    = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const role     = document.getElementById("role").value;
+  const msgBox   = document.getElementById("msg");
+
+  const res = await fetch("/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password, role })
+  });
+
+  const data = await res.json();
+
+  if (res.ok) {
+    msgBox.className = "alert alert-success";
+    msgBox.textContent = "Account created! Redirecting to login...";
+    msgBox.classList.remove("d-none");
+    setTimeout(() => window.location.href = "/login", 1500);
+  } else {
+    msgBox.className = "alert alert-danger";
+    msgBox.textContent = data.error;
+    msgBox.classList.remove("d-none");
+  }
+}
+</script>
+{% endblock %}

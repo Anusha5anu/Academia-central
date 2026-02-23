@@ -1,0 +1,55 @@
+<!-- frontend/templates/index.html -->
+{% extends "base.html" %}
+{% block title %}Welcome | Academia Central{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="text-center py-5 hero-section rounded-4 mb-5">
+  <h1 class="display-4 fw-bold text-primary">Welcome to Academia Central</h1>
+  <p class="lead text-muted mb-4">A fast, modern student enrollment and management system powered by Python & MongoDB.</p>
+  <a href="/register" class="btn btn-primary btn-lg me-2">
+    <i class="bi bi-person-plus-fill me-1"></i> Get Started
+  </a>
+  <a href="/login" class="btn btn-outline-primary btn-lg">
+    <i class="bi bi-box-arrow-in-right me-1"></i> Login
+  </a>
+</div>
+
+<!-- Feature Cards -->
+<div class="row g-4 mb-5">
+  <div class="col-md-4">
+    <div class="card h-100 border-0 shadow-sm text-center p-3">
+      <div class="fs-1 text-primary mb-2"><i class="bi bi-person-vcard-fill"></i></div>
+      <h5 class="fw-bold">Student Profiles</h5>
+      <p class="text-muted">Manage personal info, academic history, achievements, and documents in one place.</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100 border-0 shadow-sm text-center p-3">
+      <div class="fs-1 text-success mb-2"><i class="bi bi-journal-bookmark-fill"></i></div>
+      <h5 class="fw-bold">Course Enrollment</h5>
+      <p class="text-muted">Browse and enroll in courses based on your eligibility. Track approval status in real-time.</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100 border-0 shadow-sm text-center p-3">
+      <div class="fs-1 text-warning mb-2"><i class="bi bi-speedometer2"></i></div>
+      <h5 class="fw-bold">Admin Dashboard</h5>
+      <p class="text-muted">Approve applications, view enrollment trends, and search students by department or year.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Tech Stack -->
+<div class="card border-0 bg-light p-4 rounded-4">
+  <h5 class="fw-bold mb-3 text-center">Technology Stack</h5>
+  <div class="d-flex flex-wrap justify-content-center gap-3">
+    <span class="badge bg-primary fs-6 px-3 py-2">Python (Flask)</span>
+    <span class="badge bg-success fs-6 px-3 py-2">MongoDB</span>
+    <span class="badge bg-info text-dark fs-6 px-3 py-2">PyMongo</span>
+    <span class="badge bg-warning text-dark fs-6 px-3 py-2">HTML5 / CSS3 / JS</span>
+    <span class="badge bg-danger fs-6 px-3 py-2">JWT Auth</span>
+    <span class="badge bg-secondary fs-6 px-3 py-2">Bootstrap 5</span>
+  </div>
+</div>
+{% endblock %}

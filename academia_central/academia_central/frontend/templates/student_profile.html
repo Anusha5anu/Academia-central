@@ -1,0 +1,143 @@
+<!-- frontend/templates/student_profile.html -->
+{% extends "base.html" %}
+{% block title %}My Profile | Academia Central{% endblock %}
+
+{% block content %}
+<h2 class="fw-bold mb-4"><i class="bi bi-person-fill me-2 text-primary"></i>My Student Profile</h2>
+
+<div id="msg" class="d-none alert mb-3"></div>
+
+<div class="card border-0 shadow p-4">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label fw-semibold">Full Name</label>
+      <input type="text" id="name" class="form-control" placeholder="Your name" />
+    </div>
+    <div class="col-md-6">
+      <label class="form-label fw-semibold">Date of Birth</label>
+      <input type="date" id="dob" class="form-control" />
+    </div>
+    <div class="col-md-6">
+      <label class="form-label fw-semibold">Gender</label>
+      <select id="gender" class="form-select">
+        <option value="">Select</option>
+        <option>Male</option>
+        <option>Female</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label fw-semibold">Phone</label>
+      <input type="text" id="phone" class="form-control" placeholder="10-digit number" />
+    </div>
+    <div class="col-md-12">
+      <label class="form-label fw-semibold">Address</label>
+      <input type="text" id="address" class="form-control" placeholder="Street, City, State" />
+    </div>
+    <div class="col-md-6">
+      <label class="form-label fw-semibold">Department</label>
+      <select id="department" class="form-select">
+        <option value="">Select Department</option>
+        <option>Computer Science</option>
+        <option>Electronics</option>
+        <option>Mechanical</option>
+        <option>Civil</option>
+        <option>Business</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label fw-semibold">Year</label>
+      <select id="year" class="form-select">
+        <option value="">Year</option>
+        <option value="1">1st Year</option>
+        <option value="2">2nd Year</option>
+        <option value="3">3rd Year</option>
+        <option value="4">4th Year</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label fw-semibold">GPA</label>
+      <input type="number" id="gpa" class="form-control" step="0.1" min="0" max="10" placeholder="e.g. 8.5" />
+    </div>
+    <div class="col-md-12">
+      <label class="form-label fw-semibold">Achievements (comma-separated)</label>
+      <input type="text" id="achievements" class="form-control" placeholder="e.g. Hackathon Winner, NSS Volunteer" />
+    </div>
+  </div>
+
+  <div class="mt-4 d-flex gap-2">
+    <button onclick="saveProfile('create')" class="btn btn-primary px-4" id="btn-create">
+      <i class="bi bi-plus-circle me-1"></i> Create Profile
+    </button>
+    <button onclick="saveProfile('update')" class="btn btn-warning px-4 d-none" id="btn-update">
+      <i class="bi bi-save me-1"></i> Update Profile
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const token = localStorage.getItem("token");
+
+// Load existing profile when page opens
+async function loadProfile() {
+  const res  = await fetch("/api/students/profile", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+
+  if (res.ok) {
+    const p = await res.json();
+    // Fill form fields with existing data
+    document.getElementById("name").value         = p.name || "";
+    document.getElementById("dob").value          = p.dob || "";
+    document.getElementById("gender").value       = p.gender || "";
+    document.getElementById("phone").value        = p.phone || "";
+    document.getElementById("address").value      = p.address || "";
+    document.getElementById("department").value   = p.department || "";
+    document.getElementById("year").value         = p.year || "";
+    document.getElementById("gpa").value          = p.gpa || "";
+    document.getElementById("achievements").value = (p.achievements || []).join(", ");
+
+    // Show Update button instead of Create
+    document.getElementById("btn-create").classList.add("d-none");
+    document.getElementById("btn-update").classList.remove("d-none");
+  }
+}
+
+async function saveProfile(action) {
+  const data = {
+    name:         document.getElementById("name").value,
+    dob:          document.getElementById("dob").value,
+    gender:       document.getElementById("gender").value,
+    phone:        document.getElementById("phone").value,
+    address:      document.getElementById("address").value,
+    department:   document.getElementById("department").value,
+    year:         parseInt(document.getElementById("year").value),
+    gpa:          parseFloat(document.getElementById("gpa").value),
+    achievements: document.getElementById("achievements").value.split(",").map(s => s.trim()).filter(Boolean)
+  };
+
+  // Choose POST (create) or PUT (update)
+  const method = action === "create" ? "POST" : "PUT";
+  const res    = await fetch("/api/students/profile", {
+    method,
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+    body: JSON.stringify(data)
+  });
+
+  const result = await res.json();
+  const msg    = document.getElementById("msg");
+  msg.className   = res.ok ? "alert alert-success" : "alert alert-danger";
+  msg.textContent = res.ok ? result.message : result.error;
+  msg.classList.remove("d-none");
+
+  if (res.ok && action === "create") {
+    document.getElementById("btn-create").classList.add("d-none");
+    document.getElementById("btn-update").classList.remove("d-none");
+  }
+}
+
+loadProfile();
+</script>
+{% endblock %}

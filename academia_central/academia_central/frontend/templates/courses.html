@@ -1,0 +1,86 @@
+<!-- frontend/templates/courses.html -->
+{% extends "base.html" %}
+{% block title %}Browse Courses | Academia Central{% endblock %}
+
+{% block content %}
+<h2 class="fw-bold mb-4"><i class="bi bi-journal-bookmark-fill me-2 text-success"></i>Available Courses</h2>
+
+<div id="msg" class="d-none alert mb-3"></div>
+
+<!-- Course Cards Grid -->
+<div class="row g-4" id="courses-container">
+  <div class="col-12 text-center py-5 text-muted" id="courses-loading">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-2">Loading courses...</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const token = localStorage.getItem("token");
+
+async function loadCourses() {
+  const res  = await fetch("/api/courses/", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const data = await res.json();
+  const container = document.getElementById("courses-container");
+
+  if (!data.length) {
+    container.innerHTML = '<p class="text-muted text-center col-12">No courses available yet.</p>';
+    return;
+  }
+
+  // Build a Bootstrap card for each course
+  container.innerHTML = data.map(c => {
+    const seats   = c.capacity - c.enrolled;
+    const full    = seats <= 0;
+    const pct     = Math.round((c.enrolled / c.capacity) * 100);
+    return `
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-body">
+            <span class="badge bg-primary mb-2">${c.department}</span>
+            <h5 class="card-title fw-bold">${c.name}</h5>
+            <p class="text-muted mb-1"><small>Code: <strong>${c.code}</strong> &bull; Credits: <strong>${c.credits}</strong></small></p>
+
+            <!-- Seat capacity progress bar -->
+            <div class="mb-3">
+              <small class="text-muted">Seats: ${c.enrolled}/${c.capacity}</small>
+              <div class="progress mt-1" style="height:6px">
+                <div class="progress-bar ${pct > 80 ? 'bg-danger' : 'bg-success'}"
+                     style="width:${pct}%"></div>
+              </div>
+            </div>
+
+            <button onclick="enroll('${c._id}', '${c.name}')"
+              class="btn ${full ? 'btn-secondary disabled' : 'btn-outline-success'} w-100 fw-bold"
+              ${full ? 'disabled' : ''}>
+              ${full ? 'Class Full' : '<i class="bi bi-plus-circle me-1"></i>Enroll'}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+async function enroll(courseId, courseName) {
+  const res  = await fetch(`/api/courses/${courseId}/enroll`, {
+    method: "POST",
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const data = await res.json();
+  const msg  = document.getElementById("msg");
+  msg.className   = res.ok ? "alert alert-success" : "alert alert-danger";
+  msg.textContent = res.ok ? `✅ ${data.message}` : `❌ ${data.error}`;
+  msg.classList.remove("d-none");
+
+  // Refresh courses list
+  if (res.ok) loadCourses();
+}
+
+loadCourses();
+</script>
+{% endblock %}

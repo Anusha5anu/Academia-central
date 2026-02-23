@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard | Academia Central{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0"><i class="bi bi-speedometer2 me-2 text-primary"></i>Admin Dashboard</h2>
+  <button onclick="refreshAll()" class="btn btn-outline-primary btn-sm">
+    <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+  </button>
+</div>
+
+<!-- Clickable Stat Cards -->
+<div class="row g-3 mb-4">
+  <!-- Clicking each card scrolls to its section -->
+  <div class="col-md-3">
+    <div class="card border-0 bg-primary text-white shadow p-3 text-center stat-card" onclick="scrollTo('students-section')" style="cursor:pointer">
+      <div class="fs-1 fw-bold" id="stat-students">—</div>
+      <div><i class="bi bi-people-fill me-1"></i>Total Students</div>
+      <small class="opacity-75">Click to view list</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 bg-success text-white shadow p-3 text-center stat-card" onclick="scrollTo('courses-section')" style="cursor:pointer">
+      <div class="fs-1 fw-bold" id="stat-courses">—</div>
+      <div><i class="bi bi-journal-bookmark-fill me-1"></i>Total Courses</div>
+      <small class="opacity-75">Click to manage</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 bg-info text-white shadow p-3 text-center stat-card" onclick="scrollTo('enrollments-section'); filterEnrollments('all')" style="cursor:pointer">
+      <div class="fs-1 fw-bold" id="stat-enrollments">—</div>
+      <div><i class="bi bi-journal-check me-1"></i>Total Enrollments</div>
+      <small class="opacity-75">Click to view all</small>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 bg-warning text-dark shadow p-3 text-center stat-card" onclick="scrollTo('enrollments-section'); filterEnrollments('pending')" style="cursor:pointer">
+      <div class="fs-1 fw-bold" id="stat-pending">—</div>
+      <div><i class="bi bi-hourglass-split me-1"></i>Pending Approvals</div>
+      <small class="opacity-75 text-dark">Click to approve</small>
+    </div>
+  </div>
+</div>
+
+<!-- Search Students Panel -->
+<div class="card border-0 shadow-sm p-4 mb-4" id="students-section">
+  <h5 class="fw-bold mb-3"><i class="bi bi-search me-2 text-primary"></i>Search Students</h5>
+  <div class="row g-2 mb-3">
+    <div class="col-md-4">
+      <input type="text" id="search-name" class="form-control" placeholder="Name (partial OK)" />
+    </div>
+    <div class="col-md-3">
+      <select id="search-dept" class="form-select">
+        <option value="">All Departments</option>
+        <option>Computer Science</option>
+        <option>Electronics</option>
+        <option>Mechanical</option>
+        <option>Civil</option>
+        <option>Business</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select id="search-year" class="form-select">
+        <option value="">All Years</option>
+        <option value="1">Year 1</option>
+        <option value="2">Year 2</option>
+        <option value="3">Year 3</option>
+        <option value="4">Year 4</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button onclick="searchStudents()" class="btn btn-primary w-100">
+        <i class="bi bi-search me-1"></i> Search
+      </button>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr><th>#</th><th>Name</th><th>Email</th><th>Department</th><th>Year</th><th>GPA</th><th>Phone</th></tr>
+      </thead>
+      <tbody id="students-body">
+        <tr><td colspan="6" class="text-muted text-center py-3">Click Search to load students</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- All Enrollments with Filter Tabs -->
+<div class="card border-0 shadow-sm p-4 mb-4" id="enrollments-section">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h5 class="fw-bold mb-0"><i class="bi bi-list-check me-2 text-primary"></i>Enrollments</h5>
+    <div class="btn-group" role="group">
+      <button onclick="filterEnrollments('all')"      class="btn btn-sm btn-primary"         id="ef-all">All</button>
+      <button onclick="filterEnrollments('pending')"  class="btn btn-sm btn-outline-warning" id="ef-pending">⏳ Pending</button>
+      <button onclick="filterEnrollments('approved')" class="btn btn-sm btn-outline-success" id="ef-approved">✅ Approved</button>
+      <button onclick="filterEnrollments('rejected')" class="btn btn-sm btn-outline-danger"  id="ef-rejected">❌ Rejected</button>
+    </div>
+  </div>
+
+  <div id="enroll-loading" class="text-center py-4">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-2 text-muted">Loading enrollments...</p>
+  </div>
+
+  <div class="table-responsive d-none" id="enroll-table-wrap">
+    <table class="table table-hover align-middle">
+      <thead class="table-primary">
+        <tr><th>#</th><th>Student ID</th><th>Course</th><th>Date</th><th>Status</th><th>Action</th></tr>
+      </thead>
+      <tbody id="enroll-body"></tbody>
+    </table>
+    <p id="enroll-filter-empty" class="text-muted text-center d-none">No enrollments with this status.</p>
+  </div>
+  <div id="enroll-empty" class="text-center py-4 d-none">
+    <div class="fs-1 text-muted"><i class="bi bi-journal-x"></i></div>
+    <p class="text-muted">No enrollments yet.</p>
+  </div>
+</div>
+
+<!-- Courses Panel -->
+<div class="card border-0 shadow-sm p-4 mb-4" id="courses-section">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold mb-0"><i class="bi bi-journal-bookmark-fill me-2 text-success"></i>Courses</h5>
+    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+      <i class="bi bi-plus-circle me-1"></i> Add Course
+    </button>
+  </div>
+  <div id="courses-loading" class="text-center py-3 text-muted">Loading...</div>
+  <div class="row g-3" id="courses-grid"></div>
+</div>
+
+<!-- Add Course Modal -->
+<div class="modal fade" id="addCourseModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Add New Course</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="course-msg" class="d-none alert"></div>
+        <div class="mb-2"><label class="form-label fw-semibold">Course Code</label>
+          <input id="c-code" class="form-control" placeholder="e.g. CS101" /></div>
+        <div class="mb-2"><label class="form-label fw-semibold">Course Name</label>
+          <input id="c-name" class="form-control" placeholder="Introduction to Python" /></div>
+        <div class="mb-2"><label class="form-label fw-semibold">Department</label>
+          <input id="c-dept" class="form-control" placeholder="Computer Science" /></div>
+        <div class="row">
+          <div class="col mb-2"><label class="form-label fw-semibold">Credits</label>
+            <input id="c-credits" type="number" class="form-control" value="3" /></div>
+          <div class="col mb-2"><label class="form-label fw-semibold">Capacity</label>
+            <input id="c-capacity" type="number" class="form-control" value="30" /></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" onclick="addCourse()">Create Course</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const token = localStorage.getItem("token");
+let allEnrollments = [];
+
+// Smooth scroll helper
+function scrollTo(id) {
+  setTimeout(() => document.getElementById(id).scrollIntoView({ behavior: "smooth" }), 100);
+}
+
+// Load dashboard stats
+async function loadStats() {
+  const res  = await fetch("/api/admin/dashboard", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const data = await res.json();
+  document.getElementById("stat-students").textContent    = data.total_students;
+  document.getElementById("stat-courses").textContent     = data.total_courses;
+  document.getElementById("stat-enrollments").textContent = data.total_enrollments;
+  document.getElementById("stat-pending").textContent     = data.pending_approvals;
+}
+
+// Load ALL enrollments (not just pending)
+async function loadAllEnrollments() {
+  try {
+    const res  = await fetch("/api/admin/all-enrollments", {
+      headers: { "Authorization": "Bearer " + token }
+    });
+    allEnrollments = await res.json();
+  } catch(e) { allEnrollments = []; }
+
+  document.getElementById("enroll-loading").classList.add("d-none");
+
+  if (!allEnrollments.length) {
+    document.getElementById("enroll-empty").classList.remove("d-none");
+    return;
+  }
+  document.getElementById("enroll-table-wrap").classList.remove("d-none");
+  renderEnrollRows(allEnrollments);
+}
+
+// Render enrollment rows
+function renderEnrollRows(list) {
+  const tbody = document.getElementById("enroll-body");
+  const empty = document.getElementById("enroll-filter-empty");
+
+  if (!list.length) {
+    tbody.innerHTML = "";
+    empty.classList.remove("d-none");
+    return;
+  }
+  empty.classList.add("d-none");
+
+  tbody.innerHTML = list.map((e, i) => {
+    const badgeClass = e.status === "approved" ? "bg-success"
+                     : e.status === "rejected"  ? "bg-danger"
+                     : "bg-warning text-dark";
+    const icon = e.status === "approved" ? "✅" : e.status === "rejected" ? "❌" : "⏳";
+    const showActions = e.status === "pending";
+    return `
+      <tr id="row-${e._id}">
+        <td class="text-muted">${i + 1}</td>
+        <td><code class="text-primary">${e.user_id ? e.user_id.slice(-6).toUpperCase() : "—"}</code></td>
+        <td class="fw-semibold">${e.course_name || "—"}</td>
+        <td><small>${e.enrolled_at ? new Date(e.enrolled_at).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}) : "—"}</small></td>
+        <td><span class="badge ${badgeClass} px-2 py-1">${icon} ${e.status}</span></td>
+        <td>
+          ${showActions ? `
+            <button onclick="updateEnrollment('${e._id}','approved')" class="btn btn-success btn-sm me-1">✅ Approve</button>
+            <button onclick="updateEnrollment('${e._id}','rejected')" class="btn btn-danger btn-sm">❌ Reject</button>
+          ` : `<span class="text-muted small">—</span>`}
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+// Filter enrollments by status
+function filterEnrollments(status) {
+  // Update active button
+  ["all","pending","approved","rejected"].forEach(s => {
+    const btn = document.getElementById("ef-" + s);
+    const base = s === "all" ? "primary" : s === "pending" ? "warning" : s === "approved" ? "success" : "danger";
+    btn.className = `btn btn-sm btn-outline-${base}`;
+  });
+  const activeBase = status === "all" ? "primary" : status === "pending" ? "warning" : status === "approved" ? "success" : "danger";
+  document.getElementById("ef-" + status).className = `btn btn-sm btn-${activeBase}`;
+
+  const filtered = status === "all" ? allEnrollments : allEnrollments.filter(e => e.status === status);
+  renderEnrollRows(filtered);
+}
+
+// Approve or reject an enrollment
+async function updateEnrollment(id, status) {
+  await fetch(`/api/courses/enrollment/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+    body: JSON.stringify({ status })
+  });
+  // Update that row in local data without full reload
+  const idx = allEnrollments.findIndex(e => e._id === id);
+  if (idx !== -1) allEnrollments[idx].status = status;
+  filterEnrollments(document.querySelector(".btn-group .btn-warning, .btn-group .btn-success, .btn-group .btn-danger, .btn-group .btn-primary")?.textContent.trim() === "All" ? "all" : status);
+  renderEnrollRows(allEnrollments);
+  loadStats(); // Refresh numbers
+}
+
+// Search students
+async function searchStudents() {
+  const params = new URLSearchParams();
+  const name = document.getElementById("search-name").value;
+  const dept = document.getElementById("search-dept").value;
+  const year = document.getElementById("search-year").value;
+  if (name) params.append("name", name);
+  if (dept) params.append("department", dept);
+  if (year) params.append("year", year);
+
+  const res  = await fetch(`/api/students/search?${params}`, {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const data = await res.json();
+  const tbody = document.getElementById("students-body");
+
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center py-3">No students found. Try a different name or check if they registered.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map((s, i) => `
+    <tr>
+      <td class="text-muted">${i+1}</td>
+      <td class="fw-semibold">${s.name || "—"}${s.note ? '<br><span class="badge bg-warning text-dark" style="font-size:10px">No profile yet</span>' : ''}</td>
+      <td><small class="text-muted">${s.email || "—"}</small></td>
+      <td>${s.department && s.department !== "Not set" ? s.department : "—"}</td>
+      <td>${s.year && s.year !== "Not set" ? "Year " + s.year : "—"}</td>
+      <td>${s.gpa && s.gpa !== "Not set" ? s.gpa : "—"}</td>
+      <td>${s.phone && s.phone !== "Not set" ? s.phone : "—"}</td>
+    </tr>
+  `).join("");
+}
+
+// Load courses grid
+async function loadCourses() {
+  const res  = await fetch("/api/courses/", {
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const data = await res.json();
+  document.getElementById("courses-loading").classList.add("d-none");
+  const grid = document.getElementById("courses-grid");
+
+  if (!data.length) {
+    grid.innerHTML = '<p class="text-muted">No courses yet. Add one above.</p>';
+    return;
+  }
+  grid.innerHTML = data.map(c => {
+    const pct = Math.round((c.enrolled / c.capacity) * 100);
+    return `
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+          <div class="d-flex justify-content-between align-items-start mb-1">
+            <span class="badge bg-primary">${c.department}</span>
+            <span class="badge bg-secondary">${c.credits} cr</span>
+          </div>
+          <h6 class="fw-bold mt-1 mb-0">${c.name}</h6>
+          <small class="text-muted">Code: ${c.code}</small>
+          <div class="mt-2">
+            <small class="text-muted">Seats: ${c.enrolled}/${c.capacity}</small>
+            <div class="progress mt-1" style="height:5px">
+              <div class="progress-bar ${pct > 80 ? 'bg-danger' : 'bg-success'}" style="width:${pct}%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+// Add new course
+async function addCourse() {
+  const data = {
+    code:       document.getElementById("c-code").value,
+    name:       document.getElementById("c-name").value,
+    department: document.getElementById("c-dept").value,
+    credits:    parseInt(document.getElementById("c-credits").value),
+    capacity:   parseInt(document.getElementById("c-capacity").value)
+  };
+  const res    = await fetch("/api/courses/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+    body: JSON.stringify(data)
+  });
+  const result = await res.json();
+  const msg    = document.getElementById("course-msg");
+  msg.className   = res.ok ? "alert alert-success" : "alert alert-danger";
+  msg.textContent = res.ok ? "Course added successfully!" : result.error;
+  msg.classList.remove("d-none");
+  if (res.ok) { loadStats(); loadCourses(); }
+}
+
+function refreshAll() { loadStats(); loadAllEnrollments(); loadCourses(); }
+
+// Init
+loadStats();
+loadAllEnrollments();
+loadCourses();
+</script>
+{% endblock %}
